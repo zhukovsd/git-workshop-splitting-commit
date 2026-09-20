@@ -26,10 +26,22 @@ import java.util.UUID;
 @Slf4j
 @WebServlet("/forecast")
 public class ForecastServlet extends WeatherTrackerBaseServlet {
-    private final SessionDao sessionDao = new SessionDao();
-    private final LocationDao locationDao = new LocationDao();
-    private final WeatherApiService weatherApiService = new WeatherApiService();
-    private final ForecastService forecastService = new ForecastService();
+    private final SessionDao sessionDao;
+    private final LocationDao locationDao;
+    private final WeatherApiService weatherApiService;
+    private final ForecastService forecastService;
+
+    public ForecastServlet() {
+        this(new SessionDao(), new LocationDao(), new WeatherApiService(), new ForecastService());
+    }
+
+    ForecastServlet(SessionDao sessionDao, LocationDao locationDao, WeatherApiService weatherApiService,
+                    ForecastService forecastService) {
+        this.sessionDao = sessionDao;
+        this.locationDao = locationDao;
+        this.weatherApiService = weatherApiService;
+        this.forecastService = forecastService;
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -54,7 +66,12 @@ public class ForecastServlet extends WeatherTrackerBaseServlet {
             throw new InvalidParameterException("Parameter locationId is invalid");
         }
 
-        Long locationId = Long.parseLong(locationParam);
+        Long locationId;
+        try {
+            locationId = Long.parseLong(locationParam);
+        } catch (NumberFormatException exception) {
+            throw new InvalidParameterException("Parameter locationId is invalid");
+        }
 
         log.info("Finding location: " + locationId);
         Location location = locationDao.findById(locationId)

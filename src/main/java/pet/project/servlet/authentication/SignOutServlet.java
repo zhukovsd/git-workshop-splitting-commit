@@ -18,7 +18,15 @@ import java.util.UUID;
 @Slf4j
 @WebServlet("/sign-out")
 public class SignOutServlet extends WeatherTrackerBaseServlet {
-    private final SessionDao sessionDao = new SessionDao();
+    private final SessionDao sessionDao;
+
+    public SignOutServlet() {
+        this(new SessionDao());
+    }
+
+    SignOutServlet(SessionDao sessionDao) {
+        this.sessionDao = sessionDao;
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

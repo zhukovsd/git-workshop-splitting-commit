@@ -26,9 +26,19 @@ import java.util.UUID;
 @Slf4j
 @WebServlet("/search")
 public class SearchServlet extends WeatherTrackerBaseServlet {
-    private final SessionDao sessionDao = new SessionDao();
-    private final LocationDao locationDao = new LocationDao();
-    private final WeatherApiService weatherApiService = new WeatherApiService();
+    private final SessionDao sessionDao;
+    private final LocationDao locationDao;
+    private final WeatherApiService weatherApiService;
+
+    public SearchServlet() {
+        this(new SessionDao(), new LocationDao(), new WeatherApiService());
+    }
+
+    SearchServlet(SessionDao sessionDao, LocationDao locationDao, WeatherApiService weatherApiService) {
+        this.sessionDao = sessionDao;
+        this.locationDao = locationDao;
+        this.weatherApiService = weatherApiService;
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, SessionExpiredException, InvalidParameterException, GeocodingApiCallException, UnauthorizedSearchException {
@@ -98,8 +108,21 @@ public class SearchServlet extends WeatherTrackerBaseServlet {
             throw new InvalidParameterException("Parameter longitude is invalid");
         }
 
-        Double latitude = Double.valueOf(latitudeParam);
-        Double longitude = Double.valueOf(longitudeParam);
+        double latitude;
+        double longitude;
+        try {
+            latitude = Double.parseDouble(latitudeParam);
+            longitude = Double.parseDouble(longitudeParam);
+        } catch (NumberFormatException exception) {
+            throw new InvalidParameterException("Latitude or longitude parameter is invalid");
+        }
+
+        if (!Double.isFinite(latitude) || latitude < -90 || latitude > 90) {
+            throw new InvalidParameterException("Parameter latitude is invalid");
+        }
+        if (!Double.isFinite(longitude) || longitude < -180 || longitude > 180) {
+            throw new InvalidParameterException("Parameter longitude is invalid");
+        }
 
         log.info("Finding location: lat=" + latitude + " lon=" + longitude);
         Optional<Location> locationOptional = locationDao.findByCoordinates(latitude, longitude);

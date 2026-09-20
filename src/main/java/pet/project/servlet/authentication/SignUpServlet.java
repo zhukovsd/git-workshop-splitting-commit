@@ -21,8 +21,17 @@ import java.util.UUID;
 @Slf4j
 @WebServlet("/sign-up")
 public class SignUpServlet extends WeatherTrackerBaseServlet {
-    private final UserDao userDao = new UserDao();
-    private final SessionDao sessionDao = new SessionDao();
+    private final UserDao userDao;
+    private final SessionDao sessionDao;
+
+    public SignUpServlet() {
+        this(new UserDao(), new SessionDao());
+    }
+
+    SignUpServlet(UserDao userDao, SessionDao sessionDao) {
+        this.userDao = userDao;
+        this.sessionDao = sessionDao;
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {

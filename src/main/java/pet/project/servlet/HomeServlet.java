@@ -29,9 +29,19 @@ import java.util.*;
 @Slf4j
 @WebServlet("")
 public class HomeServlet extends WeatherTrackerBaseServlet {
-    private final SessionDao sessionDao = new SessionDao();
-    private final LocationDao locationDao = new LocationDao();
-    private final WeatherApiService weatherApiService = new WeatherApiService();
+    private final SessionDao sessionDao;
+    private final LocationDao locationDao;
+    private final WeatherApiService weatherApiService;
+
+    public HomeServlet() {
+        this(new SessionDao(), new LocationDao(), new WeatherApiService());
+    }
+
+    HomeServlet(SessionDao sessionDao, LocationDao locationDao, WeatherApiService weatherApiService) {
+        this.sessionDao = sessionDao;
+        this.locationDao = locationDao;
+        this.weatherApiService = weatherApiService;
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, CookieNotFoundException, SessionExpiredException, WeatherApiCallException {
@@ -96,7 +106,12 @@ public class HomeServlet extends WeatherTrackerBaseServlet {
             throw new InvalidParameterException("Parameter locationId is invalid");
         }
 
-        Long locationId = Long.parseLong(locationParam);
+        Long locationId;
+        try {
+            locationId = Long.parseLong(locationParam);
+        } catch (NumberFormatException exception) {
+            throw new InvalidParameterException("Parameter locationId is invalid");
+        }
 
         log.info("Finding location: " + locationId);
         Location location = locationDao.findById(locationId)
